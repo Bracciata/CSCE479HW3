@@ -72,7 +72,8 @@ class Model:
 
         self.generator_optimizer = tf.keras.optimizers.Adam(1e-4)
         self.discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
-    def train(self, dataset,codings_size=30, batch_size=32,n_epochs=50):
+
+    def train(self, dataset, batch_size=32,n_epochs=50):
         seed = tf.random.normal([1, 100])
         # Early stopping from https://www.tensorflow.org/guide/migrate/early_stopping
         patience = 5
@@ -106,13 +107,16 @@ class Model:
                     wait = 0
                 if wait >= patience:
                     break
-            self.generate_and_save_images(self.generator,
-                        epoch,
-                        seed)
-    def generate_and_save_images(self,model, epoch, test_input):
+            # 11 because 11 is cool
+            if epoch % 11 == 0:
+                self.generate_and_save_images(
+                            epoch,
+                            seed)
+    def generate_and_save_images(self, epoch, test_input):
+        # NOTICE THE BELOW IS DIRECTLY  FROM TENSORFLOW WITH MINOR MODIFCATIONS
         # Notice `training` is set to False.
         # This is so all layers run in inference mode (batchnorm).
-        predictions = model(test_input, training=False)
+        predictions = self.generator(test_input, training=False)
 
         fig = plt.figure(figsize=(1, 1))
 
@@ -122,4 +126,3 @@ class Model:
             plt.axis('off')
 
         plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
-        #plt.show()
