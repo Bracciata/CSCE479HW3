@@ -10,5 +10,4 @@ if not os.path.isdir('celeba_gan'):
 ds = get_dataset()
 
 model = Model()
-batch_size = 32
 model.train(ds)
