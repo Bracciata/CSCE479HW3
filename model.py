@@ -19,10 +19,12 @@ class Model:
             input_shape=(codings_size,codings_size,3)),
             keras.layers.Dense(150, activation="selu"),
             keras.layers.Dense (3, activation="sigmoid"),
+            keras.layers.Reshape([64,64,3])
         ])
 
 
         self.discriminator = keras.models.Sequential([
+            keras.layers.Flatten(input_shape=[64,64,3]),
             keras.layers.Dense(150,activation="selu",input_shape=(codings_size,codings_size,3)),
             keras.layers.Dense(100,activation="selu"),
             keras.layers.Dense(1, activation="sigmoid")
@@ -43,12 +45,14 @@ class Model:
                 print(X_batch['image'])
                 # phase 1 - training the discriminator
                 noise = tf.random.normal(shape=[64,64,3])
-                generated_images = self.generator(noise)
-                x = tf.cast(X_batch['image'],tf.float32)
-                X_fake_and_real = tf.concat([generated_images,x], axis=0)
+                generated_images = tf.squeeze(self.generator(tf.expand_dims(noise,axis=0)),axis=0)
+                images = tf.cast(X_batch['image'],tf.float32)
+                #X_fake_and_real = tf.concat([generated_images,x], axis=0)
+                
                 y1 = tf.constant([[0.]] * batch_size + [[1.1]] * batch_size)
                 self.discriminator.trainable = True
-                self.discriminator.train_on_batch(X_fake_and_real, y1)
+                self.discriminator.train_on_batch(tf.expand_dims(generated_images,axis=0))
+                self.discriminator.train_on_batch(tf.expand_dims(images,axis=0))
                 # phase 2 - training the generator
                 noise = tf.random.normal(shape=[batch_size,codings_size])
                 y2 = tf.constant ([[1.]] * batch_size)
