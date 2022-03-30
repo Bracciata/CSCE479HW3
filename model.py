@@ -73,8 +73,8 @@ class Model:
         self.generator_optimizer = tf.keras.optimizers.Adam(1e-4)
         self.discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
-    def train(self, dataset, batch_size=32,n_epochs=50):
-        seed = tf.random.normal([1, 100])
+    def train(self, dataset, batch_size=32,n_epochs=334):
+        seed = tf.random.normal([9, 100])
         # Early stopping from https://www.tensorflow.org/guide/migrate/early_stopping
         patience = 5
 
@@ -118,10 +118,10 @@ class Model:
         # This is so all layers run in inference mode (batchnorm).
         predictions = self.generator(test_input, training=False)
 
-        fig = plt.figure(figsize=(1, 1))
+        fig = plt.figure(figsize=(3, 3))
 
         for i in range(predictions.shape[0]):
-            plt.subplot(1, 1, i+1)
+            plt.subplot(3, 3, i+1)
             plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5)
             plt.axis('off')
 
