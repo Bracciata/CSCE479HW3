@@ -44,6 +44,7 @@ class Model:
         return model
     def create_discriminator(self):
         model = tf.keras.Sequential()
+        model.add(tf.keras.Input(shape=(64,64,3)))
         model.add( layers.Conv2D(64, kernel_size=4, strides=2, padding="same"))
         model.add( layers.LeakyReLU(alpha=0.2))
         model.add( layers.Conv2D(128, kernel_size=4, strides=2, padding="same"))
@@ -72,7 +73,6 @@ class Model:
         self.generator_optimizer = tf.keras.optimizers.Adam(1e-4)
         self.discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
     def train(self, dataset,codings_size=30, batch_size=32,n_epochs=50):
-        dataset = dataset.batch(32)
         seed = tf.random.normal([1, 100])
         # Early stopping from https://www.tensorflow.org/guide/migrate/early_stopping
         patience = 5
@@ -82,12 +82,14 @@ class Model:
             wait = 0
             best = 0
             for batch in dataset:
+                batch_size = tf.shape(batch)[0]
+
                 noise = tf.random.normal([batch_size, 100])
 
                 with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
                     generated_images = self.generator(noise, training=True)
 
-                    real_output = self.discriminator(tf.cast(batch['image'],tf.float32), training=True)
+                    real_output = self.discriminator(tf.cast(batch,tf.float32), training=True)
                     fake_output = self.discriminator(generated_images, training=True)
 
                     gen_loss = self.generator_loss(fake_output)
